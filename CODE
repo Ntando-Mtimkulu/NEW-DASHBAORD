@@ -1,0 +1,63 @@
+import pandas as pd
+import numpy as np
+import dash
+import dash_core_components as dcc
+import dash_html_components as html
+from dash.dependencies import Input, Output
+import plotly.express as px
+
+# Sample financial data
+data = {
+    'Year': [2019, 2020, 2021, 2022],
+    'Revenue': [100000, 120000, 150000, 180000],
+    'Expenses': [70000, 90000, 100000, 120000],
+    'Profit': [30000, 30000, 50000, 60000]
+}
+df = pd.DataFrame(data)
+
+# Initialize the Dash app
+app = dash.Dash(__name__)
+
+# Define the layout of the dashboard
+app.layout = html.Div([
+    html.H1('Financial Dashboard'),
+    html.Div([
+        dcc.Dropdown(
+            id='dropdown',
+            options=[
+                {'label': 'Revenue', 'value': 'Revenue'},
+                {'label': 'Expenses', 'value': 'Expenses'},
+                {'label': 'Profit', 'value': 'Profit'}
+            ],
+            value='Revenue'
+        )
+    ]),
+    html.Div([
+        dcc.Graph(id='line-chart'),
+        dcc.Graph(id='bar-chart')
+    ])
+])
+
+# Callback to update the line chart based on dropdown selection
+@app.callback(
+    Output('line-chart', 'figure'),
+    [Input('dropdown', 'value')]
+)
+def update_line_chart(selected_value):
+    fig = px.line(df, x='Year', y=selected_value, title=f'{selected_value} Over Time')
+    fig.update_layout(xaxis_title='Year', yaxis_title=selected_value)
+    return fig
+
+# Callback to update the bar chart based on dropdown selection
+@app.callback(
+    Output('bar-chart', 'figure'),
+    [Input('dropdown', 'value')]
+)
+def update_bar_chart(selected_value):
+    fig = px.bar(df, x='Year', y=selected_value, title=f'{selected_value} by Year')
+    fig.update_layout(xaxis_title='Year', yaxis_title=selected_value)
+    return fig
+
+# Run the app
+if __name__ == '__main__':
+    app.run_server(debug=True)
